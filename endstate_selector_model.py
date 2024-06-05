@@ -2,10 +2,13 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
+from torch.utils.data import DataLoader, Dataset
 
 import wandb
 import numpy as np
 import matplotlib.pyplot as plt
+
+from csv_dataset import CSVDataset
 
 # Define a simple model
 class FCNStateSelector(nn.Module):
@@ -59,14 +62,28 @@ class LSTMStateSelector(nn.Module):
         out = self.fc(out[:, -1, :])
         return out
     
-def train_data_prep(X, y): # was thinking of subtracting to make first waypoint 0,0,0 but then I'd have to do that at inference time too probably
-    X_train_valid = np.load('X_train_valid.npy') # (N, 4, 3)
-    y_train_valid = np.load('y_train_valid.npy') # (N, 4) v_mag, v_dir, a_mag, a_dir
+# def train_data_prep(X, y): # was thinking of subtracting to make first waypoint 0,0,0 but then I'd have to do that at inference time too probably
+#     X_train_valid = np.load('X_train_valid.npy') # (N, 4, 3)
+#     y_train_valid = np.load('y_train_valid.npy') # (N, 4) v_mag, v_dir, a_mag, a_dir
 
 
-def test_data_prep(X, y):
-    X_test = np.load('X_test.npy')
-    y_test = np.load('y_test.npy')
+# def test_data_prep(X, y):
+#     X_test = np.load('X_test.npy')
+#     y_test = np.load('y_test.npy')
+    
+# Example usage
+csv_file = 'path/to/your/data.csv'
+batch_size = 4
+
+dataset = CSVDataset(csv_file)
+dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=4)
+
+# Iterate through the DataLoader
+for i, (inputs, labels) in enumerate(dataloader):
+    print(f'Batch {i+1}')
+    print('Inputs:', inputs)
+    print('Labels:', labels)
+
 
 # Initialize and train your model (example)
 model = FCNStateSelector()
