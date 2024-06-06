@@ -2,13 +2,6 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
-from torch.utils.data import DataLoader, Dataset
-
-import wandb
-import numpy as np
-import matplotlib.pyplot as plt
-
-from csv_dataset import CSVDataset
 
 # Define a simple model
 class FCNStateSelector(nn.Module):
@@ -31,7 +24,7 @@ class CNNStateSelector(nn.Module):
         self.fc1 = nn.Linear(50, 10)
         self.fc2 = nn.Linear(10, (18*2+1)*(19*2+1))
         # self.fc2 = nn.Linear(10, 1) #output is a continuous value but since the outputs are discrete, we need to use a softmax layer
-        # should train like a classification problem since I have that for the outputs and anything more granular wouldn't make a signficant difference in execution time
+        # should train like a classification problem since I have that for the outputs and anything more granular wouldn't make a signficant difference in execution time, and to handle -1,0 case
     
     def forward(self, x):
         x = F.relu(self.conv1(x))
@@ -61,48 +54,3 @@ class LSTMStateSelector(nn.Module):
         out, _ = self.rnn(x, (h0, c0))
         out = self.fc(out[:, -1, :])
         return out
-    
-# def train_data_prep(X, y): # was thinking of subtracting to make first waypoint 0,0,0 but then I'd have to do that at inference time too probably
-#     X_train_valid = np.load('X_train_valid.npy') # (N, 4, 3)
-#     y_train_valid = np.load('y_train_valid.npy') # (N, 4) v_mag, v_dir, a_mag, a_dir
-
-
-# def test_data_prep(X, y):
-#     X_test = np.load('X_test.npy')
-#     y_test = np.load('y_test.npy')
-    
-# Example usage
-csv_file = 'path/to/your/data.csv'
-batch_size = 4
-
-dataset = CSVDataset(csv_file)
-dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=4)
-
-# Iterate through the DataLoader
-for i, (inputs, labels) in enumerate(dataloader):
-    print(f'Batch {i+1}')
-    print('Inputs:', inputs)
-    print('Labels:', labels)
-
-
-# Initialize and train your model (example)
-model = FCNStateSelector()
-criterion = nn.MSELoss()
-optimizer = optim.SGD(model.parameters(), lr=0.01)
-
-# Dummy training loop
-for epoch in range(100):
-    optimizer.zero_grad()
-    inputs = torch.randn(1, 10)
-    outputs = model(inputs)
-    loss = criterion(outputs, torch.randn(1, 1))
-    loss.backward()
-    optimizer.step()
-
-# Save the trained model
-torch.save(model.state_dict(), "simple_model.pth")
-
-# Convert to TorchScript using tracing
-example_input = torch.randn(1, 10)
-traced_script_module = torch.jit.trace(model, example_input)
-traced_script_module.save("simple_model.pt")
