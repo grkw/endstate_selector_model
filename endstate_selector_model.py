@@ -5,10 +5,12 @@ import torch.nn.functional as F
 
 # Define a simple model
 class FCNStateSelector(nn.Module):
-    def __init__(self):
+    def __init__(self, input_size, output_size):
         super(FCNStateSelector, self).__init__()
-        self.fc1 = nn.Linear(10, 1)
-        self.fc2 = nn.Linear(10, (18*2+1)*(19*2+1))
+        self.fc1 = nn.Linear(input_size, 64)
+        self.fc2 = nn.Linear(64, 64)
+        self.fc3 = nn.Linear(64, 128)
+        self.fc4 = nn.Linear(128, output_size)
 
     def forward(self, x):
         x = self.fc1(x)
