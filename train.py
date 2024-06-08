@@ -3,42 +3,26 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader
 import pandas as pd
-from csv_dataset import CSVDataset
-from endstate_selector_model import FCNStateSelector, CNNStateSelector, LSTMStateSelector
 import wandb
 import sys
 
-# Planner settings
-num_waypoints = 3
+from csv_dataset import CSVDataset
+from endstate_selector_model import FCNStateSelector, CNNStateSelector, LSTMStateSelector
+from config import Config
 
-num_vf_angles = 18
-num_vf_mags = 2
-num_vf_choices = (num_vf_angles)*(num_vf_mags+1)
-num_af_angles = 19
-num_af_mags = 2
-num_af_choices = (num_af_angles)*(num_af_mags+1)
+cfg = Config()
 
-# Model settings
-train_csv_file = 'data/train_64paths_3wps_srand3.csv'
-val_csv_file = 'data/val_64paths_3wps_srand4.csv'
-batch_size = 4
-input_size = 3*num_waypoints + 9
-output_size = num_vf_choices
+train_dataset = CSVDataset(cfg.train_csv_file, cfg.csv_input_col, cfg.csv_label_col)
+train_dataloader = DataLoader(train_dataset, batch_size=cfg.batch_size, shuffle=True, num_workers=4)
 
-csv_input_col = 18 # upper bound is exlusive
-csv_label_col = 18
-
-train_dataset = CSVDataset(train_csv_file, csv_input_col, csv_label_col)
-train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
-
-val_dataset = CSVDataset(val_csv_file, csv_input_col, csv_label_col)
-val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
+val_dataset = CSVDataset(cfg.val_csv_file, cfg.csv_input_col, cfg.csv_label_col)
+val_dataloader = DataLoader(val_dataset, batch_size=cfg.batch_size, shuffle=True, num_workers=4)
 
 # Get the first batch of the training data
 train_inputs, train_labels = next(iter(train_dataloader))
 
 # Check the batch size
-assert len(train_inputs) == batch_size, f"Expected batch size {batch_size}, but got {len(train_inputs)}"
+assert len(train_inputs) == cfg.batch_size, f"Expected batch size {cfg.batch_size}, but got {len(train_inputs)}"
 
 # Check the shape of the inputs and labels
 print(f"Shape of train_inputs: {train_inputs.shape}")
@@ -53,7 +37,7 @@ print(f"Data type of train_labels: {train_labels.dtype}")
 wandb.init(project="endstate-selector")
 
 # Initialize and train your model (example)
-model = FCNStateSelector(input_size, output_size)
+model = FCNStateSelector(cfg.input_size, cfg.output_size)
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.SGD(model.parameters(), lr=0.01)
 
@@ -64,8 +48,8 @@ for epoch in range(10):
     model.train()
     running_loss = 0.0
     for batch, (train_inputs, train_labels) in enumerate(train_dataloader):
-        print(train_inputs.shape)
-        print(train_labels.shape)
+        # print(train_inputs.shape)
+        # print(train_labels.shape)
 
         optimizer.zero_grad()
         outputs = model(train_inputs)

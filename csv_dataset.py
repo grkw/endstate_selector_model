@@ -2,6 +2,7 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
+import numpy as np
 
 class CSVDataset(Dataset):
     def __init__(self, csv_file, input_col, label_col, transform=None):
@@ -11,8 +12,12 @@ class CSVDataset(Dataset):
 
         self.le = LabelEncoder()
         self.data.iloc[:, label_col] = self.le.fit_transform(self.data.iloc[:, label_col])
+        print("LabelEncoder classes: \n", self.le.classes_)
         print("LabelEncoder classes shape: ", self.le.classes_.shape)
-        # print("LabelEncoder transformed labels: ", self.data.iloc[:, label_col]) #works as expected
+
+        labels = self.data.iloc[:, label_col]
+        label_distribution = np.bincount(labels)
+        print("Label distribution: ", label_distribution)
 
         self.label_col = label_col
         self.input_col = input_col
