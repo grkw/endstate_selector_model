@@ -6,6 +6,7 @@ import pandas as pd
 from csv_dataset import CSVDataset
 from endstate_selector_model import FCNStateSelector, CNNStateSelector, LSTMStateSelector
 import wandb
+import sys
 
 # Planner settings
 num_waypoints = 3
@@ -18,34 +19,54 @@ num_af_mags = 2
 num_af_choices = (num_af_angles)*(num_af_mags+1)
 
 # Model settings
-train_csv_file = 'data/train_64paths_3wps_srand4.csv'
-val_csv_file = 'data/val_64paths_3wps_srand3.csv'
-batch_size = 64
+train_csv_file = 'data/train_64paths_3wps_srand3.csv'
+val_csv_file = 'data/val_64paths_3wps_srand4.csv'
+batch_size = 4
 input_size = 3*num_waypoints + 9
 output_size = num_vf_choices
 
-train_dataset = CSVDataset(train_csv_file)
+csv_input_col = 18 # upper bound is exlusive
+csv_label_col = 18
+
+train_dataset = CSVDataset(train_csv_file, csv_input_col, csv_label_col)
 train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
 
-val_dataset = CSVDataset(val_csv_file)
+val_dataset = CSVDataset(val_csv_file, csv_input_col, csv_label_col)
 val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
+
+# Get the first batch of the training data
+train_inputs, train_labels = next(iter(train_dataloader))
+
+# Check the batch size
+assert len(train_inputs) == batch_size, f"Expected batch size {batch_size}, but got {len(train_inputs)}"
+
+# Check the shape of the inputs and labels
+print(f"Shape of train_inputs: {train_inputs.shape}")
+print(f"Shape of train_labels: {train_labels.shape}")
+
+# Check the data type of the inputs and labels
+print(f"Data type of train_inputs: {train_inputs.dtype}")
+print(f"Data type of train_labels: {train_labels.dtype}")
 
 # Might wanna run this on Colab so I don't have to keep loading the dataset and I can use my compute units
 
 wandb.init(project="endstate-selector")
 
 # Initialize and train your model (example)
-model = FCNStateSelector()
+model = FCNStateSelector(input_size, output_size)
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.SGD(model.parameters(), lr=0.01)
 
 best_val_loss = float('inf')
 
-for epoch in range(100):
+for epoch in range(10):
     
     model.train()
     running_loss = 0.0
     for batch, (train_inputs, train_labels) in enumerate(train_dataloader):
+        print(train_inputs.shape)
+        print(train_labels.shape)
+
         optimizer.zero_grad()
         outputs = model(train_inputs)
         loss = criterion(outputs, train_labels)
@@ -53,7 +74,7 @@ for epoch in range(100):
         optimizer.step()
         running_loss += loss.item()
     wandb.log({"train_loss": running_loss})
-    print(f"Epoch {epoch + 1}, loss: {running_loss / len(train_dataloader)}")
+    print(f"Epoch {epoch + 1}, train_loss: {running_loss / len(train_dataloader)}")
           
     model.eval()
     val_loss = 0.0
@@ -68,10 +89,10 @@ for epoch in range(100):
     # Save the model if it has the best validation loss so far
     if val_loss < best_val_loss:
         best_val_loss = val_loss
-        torch.save(model.state_dict(), "best_model.pth")
+        torch.save(model.state_dict(), "models/best_model.pth")
 
 # Save the trained model
-torch.save(model.state_dict(), "final_model.pth")
+torch.save(model.state_dict(), "models/final_model.pth")
 
 # Convert to TorchScript using tracing
 # example_input = torch.randn(1, 10)

@@ -1,4 +1,7 @@
 data/
+wandb/
+models/
+.vscode/
 
 #CMake
 CMakeFiles/

@@ -14,7 +14,12 @@ class FCNStateSelector(nn.Module):
 
     def forward(self, x):
         x = self.fc1(x)
-        x = F.softmax(x)
+        x = F.relu(x)
+        x = self.fc2(x)
+        x = F.relu(x)
+        x = self.fc3(x)
+        x = F.relu(x)
+        x = self.fc4(x)
         return x
     
 # Could conv along each x,y,z axis, along each waypoint
