@@ -12,12 +12,19 @@ class CSVDataset(Dataset):
 
         self.le = LabelEncoder()
         self.data.iloc[:, label_col] = self.le.fit_transform(self.data.iloc[:, label_col])
-        print("LabelEncoder classes: \n", self.le.classes_)
+        # print("LabelEncoder classes: \n", self.le.classes_)
         print("LabelEncoder classes shape: ", self.le.classes_.shape)
 
         labels = self.data.iloc[:, label_col]
         label_distribution = np.bincount(labels)
-        print("Label distribution: ", label_distribution)
+        # print("Label distribution: ", label_distribution)
+
+        # Pair each class with its frequency
+        class_distribution = zip(self.le.classes_, label_distribution)
+
+        # Print the classes and their frequencies
+        for class_, frequency in class_distribution:
+            print(f"Class: {class_}, Frequency: {frequency}")
 
         self.label_col = label_col
         self.input_col = input_col
@@ -35,7 +42,7 @@ class CSVDataset(Dataset):
         outputs = self.data.iloc[idx, self.label_col]
         outputs = torch.tensor(outputs, dtype=torch.long)
 
-        if self.transform:
-            sample = self.transform(sample)
+        # if self.transform:
+        #     sample = self.transform(sample)
 
         return inputs, outputs

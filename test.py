@@ -21,7 +21,7 @@ test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True, 
 
 # Load the best model
 best_model = FCNStateSelector(cfg.input_size, cfg.output_size)
-best_model.load_state_dict(torch.load("models/best_model.pth"))
+best_model.load_state_dict(torch.load(cfg.best_model_path))
 
 # Evaluate the model
 criterion = nn.CrossEntropyLoss()

@@ -5,6 +5,7 @@ from torch.utils.data import Dataset, DataLoader
 import pandas as pd
 import wandb
 import sys
+from datetime import datetime
 
 from csv_dataset import CSVDataset
 from endstate_selector_model import FCNStateSelector, CNNStateSelector, LSTMStateSelector
@@ -13,6 +14,7 @@ from config import Config
 cfg = Config()
 
 train_dataset = CSVDataset(cfg.train_csv_file, cfg.csv_input_col, cfg.csv_label_col)
+# exit(0)
 train_dataloader = DataLoader(train_dataset, batch_size=cfg.batch_size, shuffle=True, num_workers=4)
 
 val_dataset = CSVDataset(cfg.val_csv_file, cfg.csv_input_col, cfg.csv_label_col)
@@ -33,8 +35,13 @@ print(f"Data type of train_inputs: {train_inputs.dtype}")
 print(f"Data type of train_labels: {train_labels.dtype}")
 
 # Might wanna run this on Colab so I don't have to keep loading the dataset and I can use my compute units
-
+now = datetime.now()
+time_string = now.strftime("%m-%d-%H-%M")
 wandb.init(project="endstate-selector")
+wandb.run.name = f"{time_string}_endstate-selector"
+print(f"Run name: {wandb.run.name}")
+print(f"Train CSV file: {cfg.train_csv_file}")
+print(f"Val CSV file: {cfg.val_csv_file}")
 
 # Initialize and train your model (example)
 model = FCNStateSelector(cfg.input_size, cfg.output_size)
@@ -43,7 +50,9 @@ optimizer = optim.SGD(model.parameters(), lr=0.01)
 
 best_val_loss = float('inf')
 
-for epoch in range(10):
+model_name = f"models/endstate-selector_{time_string}.pth"
+
+for epoch in range(100):
     
     model.train()
     running_loss = 0.0
@@ -57,8 +66,6 @@ for epoch in range(10):
         loss.backward()
         optimizer.step()
         running_loss += loss.item()
-    wandb.log({"train_loss": running_loss})
-    print(f"Epoch {epoch + 1}, train_loss: {running_loss / len(train_dataloader)}")
           
     model.eval()
     val_loss = 0.0
@@ -67,16 +74,20 @@ for epoch in range(10):
             outputs = model(val_inputs)
             loss = criterion(outputs, val_labels)
             val_loss += loss.item()
-    wandb.log({"val_loss": val_loss})
-    print(f"Validation loss: {val_loss / len(val_dataloader)}")
+    
+    wandb.log({"val_loss": val_loss})    
+    wandb.log({"train_loss": running_loss})
+    # print(f"Validation loss: {val_loss / len(val_dataloader)}")
+    print(f"Epoch {epoch + 1}, train_loss: {running_loss / len(train_dataloader)}, val_loss: {val_loss / len(val_dataloader)}")
 
     # Save the model if it has the best validation loss so far
     if val_loss < best_val_loss:
         best_val_loss = val_loss
-        torch.save(model.state_dict(), "models/best_model.pth")
+        torch.save(model.state_dict(), model_name)
+        print(f"Model saved as {model_name}")
 
 # Save the trained model
-torch.save(model.state_dict(), "models/final_model.pth")
+# torch.save(model.state_dict(), "models/final_model.pth")
 
 # Convert to TorchScript using tracing
 # example_input = torch.randn(1, 10)

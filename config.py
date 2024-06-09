@@ -13,10 +13,11 @@ class Config:
     num_af_choices: int = (num_af_angles)*(num_af_mags)+1
 
     # Model settings
-    train_csv_file: str = 'data/train_64paths_3wps_srand3.csv'
+    train_csv_file: str = 'data/training_data_8192paths_3wps_1scale_EXPplanner_7seed.csv'
     val_csv_file: str = 'data/val_64paths_3wps_srand4.csv'
     test_csv_file: str = 'data/test_64paths_3wps_srand1.csv'
-    batch_size: int = 4
+    best_model_path: str = 'models/endstate-selector_2024-06-08-22-10-02.pth'
+    batch_size: int = 64
     input_size: int = 3*num_waypoints + 9
     output_size: int = num_vf_choices
 
