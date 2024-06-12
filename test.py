@@ -11,13 +11,9 @@ from config import Config
 
 cfg = Config()
 
-# Model test settings
-test_csv_file = 'data/test_64paths_3wps_srand1.csv'
-batch_size = 4
-
 # Load the test data
-test_dataset = CSVDataset(test_csv_file, cfg.csv_input_col, cfg.csv_label_col)  # replace with your test csv file
-test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
+test_dataset = CSVDataset(cfg.test_csv_file, cfg.csv_input_col, cfg.csv_label_col)  # replace with your test csv file
+test_dataloader = DataLoader(test_dataset, batch_size=cfg.batch_size, shuffle=True, num_workers=4)
 
 # Load the best model
 best_model = FCNStateSelector(cfg.input_size, cfg.output_size)
@@ -48,6 +44,6 @@ with torch.no_grad():
 print('Total # of test examples: ', total)
 print('# of correctly predicted examples: ', correct)
 
-print(f'Test Loss: {test_loss / len(test_dataloader)}')
-print(f'Test Accuracy: {correct / total * 100}%')
-print(f'Guessing Accuracy: {1 / cfg.num_vf_choices * 100}%')
+print(f'Test Loss: {round(test_loss / len(test_dataloader),3)}')
+print(f'Test Accuracy: {round(correct / total * 100,3)}%')
+print(f'Guessing Accuracy: {round(1 / cfg.num_vf_choices * 100,3)}%')

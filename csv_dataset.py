@@ -5,23 +5,26 @@ from sklearn.preprocessing import LabelEncoder
 import numpy as np
 
 class CSVDataset(Dataset):
-    def __init__(self, csv_file, input_col, label_col, transform=None):
-        self.data = pd.read_csv(csv_file) # automatically treats the first row as the header and does not include it in the data
+    def __init__(self, csv_files, input_col, label_col, transform=None):
+        
+        # Merge the data from all the CSV files into a single DataFrame
+        self.data = pd.concat([pd.read_csv(f) for f in csv_files])
+        # automatically treats the first row as the header and does not include it in the data
+        
         print("Data shape: ", self.data.shape)
         self.transform = transform
 
+        self.data = self.data.groupby('v_desc0').sample(n=100, replace=True)
+        print("Data shape after sampling: ", self.data.shape)
+
         self.le = LabelEncoder()
         self.data.iloc[:, label_col] = self.le.fit_transform(self.data.iloc[:, label_col])
-        # print("LabelEncoder classes: \n", self.le.classes_)
         print("LabelEncoder classes shape: ", self.le.classes_.shape)
 
         labels = self.data.iloc[:, label_col]
         label_distribution = np.bincount(labels)
-        # print("Label distribution: ", label_distribution)
-
         # Pair each class with its frequency
         class_distribution = zip(self.le.classes_, label_distribution)
-
         # Print the classes and their frequencies
         for class_, frequency in class_distribution:
             print(f"Class: {class_}, Frequency: {frequency}")

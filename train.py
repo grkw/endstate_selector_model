@@ -52,7 +52,7 @@ best_val_loss = float('inf')
 
 model_name = f"models/endstate-selector_{time_string}.pth"
 
-for epoch in range(100):
+for epoch in range(500):
     
     model.train()
     running_loss = 0.0
@@ -78,13 +78,13 @@ for epoch in range(100):
     wandb.log({"val_loss": val_loss})    
     wandb.log({"train_loss": running_loss})
     # print(f"Validation loss: {val_loss / len(val_dataloader)}")
-    print(f"Epoch {epoch + 1}, train_loss: {running_loss / len(train_dataloader)}, val_loss: {val_loss / len(val_dataloader)}")
+    print(f"Epoch {epoch + 1}, train_loss: {round(running_loss / len(train_dataloader),3)}, val_loss: {round(val_loss / len(val_dataloader),3)}")
 
     # Save the model if it has the best validation loss so far
     if val_loss < best_val_loss:
         best_val_loss = val_loss
         torch.save(model.state_dict(), model_name)
-        print(f"Model saved as {model_name}")
+        # print(f"Model saved as {model_name}")
 
 # Save the trained model
 # torch.save(model.state_dict(), "models/final_model.pth")
