@@ -17,12 +17,15 @@ class Config:
     train_csv_file: List[str] = field(default_factory=lambda: ['data/1scale/training_data_8192paths_3wps_1scale_EXPplanner_7seed.csv', 'data/1scale/training_data_8192paths_3wps_1scale_EXPplanner_9seed.csv'])
     val_csv_file: List[str] = field(default_factory=lambda: ['data/1scale/val_data_4096paths_3wps_1scale_EXPplanner_10seed.csv'])
     test_csv_file: List[str] = field(default_factory=lambda: ['data/1scale/test_data_1070paths_3wps_1scale_EXPplanner_10seed.csv'])
-    best_model_path: str = 'models/endstate-selector_06-11-21-01.pth'
+    best_model_path: str = 'models/endstate-selector_06-11-21-38.pth'
     batch_size: int = 64
     input_size: int = 3*num_waypoints + 9
-    output_size: int = num_vf_choices
+    output_size: int = 2 #vf_ang and vf_mag
 
     csv_input_col: int = 18 # upper bound is exlusive
     vf_desc_col: int = 18
+    vf_angle_col: int = 20
+    vf_mag_col: int = 21
     af_desc_col: int = 19
-    csv_label_col: int = vf_desc_col
+    
+    # csv_label_col: List[int] = field(default_factory=lambda: [20, 21]) #vf_desc_col

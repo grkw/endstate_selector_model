@@ -7,17 +7,17 @@ import wandb
 import sys
 from datetime import datetime
 
-from csv_dataset import CSVDataset
+from csv_dataset import CSVDataset, CSVDatasetMSE
 from endstate_selector_model import FCNStateSelector, CNNStateSelector, LSTMStateSelector
 from config import Config
 
 cfg = Config()
 
-train_dataset = CSVDataset(cfg.train_csv_file, cfg.csv_input_col, cfg.csv_label_col)
-# exit(0)
+train_dataset = CSVDatasetMSE(cfg.train_csv_file, cfg.csv_input_col, cfg.vf_angle_col, cfg.vf_mag_col)
+
 train_dataloader = DataLoader(train_dataset, batch_size=cfg.batch_size, shuffle=True, num_workers=4)
 
-val_dataset = CSVDataset(cfg.val_csv_file, cfg.csv_input_col, cfg.csv_label_col)
+val_dataset = CSVDatasetMSE(cfg.val_csv_file, cfg.csv_input_col, cfg.vf_angle_col, cfg.vf_mag_col)
 val_dataloader = DataLoader(val_dataset, batch_size=cfg.batch_size, shuffle=True, num_workers=4)
 
 # Get the first batch of the training data
@@ -45,7 +45,7 @@ print(f"Val CSV file: {cfg.val_csv_file}")
 
 # Initialize and train your model (example)
 model = FCNStateSelector(cfg.input_size, cfg.output_size)
-criterion = nn.CrossEntropyLoss()
+criterion = nn.MSELoss() #nn.CrossEntropyLoss()
 optimizer = optim.SGD(model.parameters(), lr=0.01)
 
 best_val_loss = float('inf')
