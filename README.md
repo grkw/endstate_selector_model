@@ -13,14 +13,22 @@ You can browse my [final report](https://github.com/user-attachments/files/18594
 ## Contributions
 
 The majority of my code contributions are in a private repo on the VECTR lab account. My capstone thesis makes the following contributions:
-- A greedy, greedy-lookahead, and random state sampling strategies
+- Implementation and analysis of greedy, greedy-lookahead, and random state sampling strategies
 - An in-depth analysis of selected state samples
 - Infrastructure for learning-enabled state sampling features
-- A simple fully-connected neural network for state sampling (this repo)
+- A simple fully-connected neural network for state sampling, trained using the behavior cloning paradigm of imitation learning (this repo)
 
 ## Architecture
 
+- 2 Fully-connected hidden layers (including Batch normalization, ReLU activation, Dropout regularization)
+- Softmax output layer
+
 <img width="640" alt="nn_IO" src="https://github.com/user-attachments/assets/185453d2-efbe-4b90-9ef7-ad65536a018a" />
+
+## Initial results
+
+With 37 different classification options, random guessing accuracy would yield a 2.7% accuracy rate. After training on a small dataset with ~100 training examples per class,  I attained a test accuracy of 8.0%. Although this number is far below 100%, it shows that learning is possible.
+
 <img width="640" alt="train_loss" src="https://github.com/user-attachments/assets/1442e713-aa0e-4cc8-b53f-06c516792801" />
 
 ## Acknowledgements
